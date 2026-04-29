@@ -1,0 +1,244 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  color: #111827;
+  background: #ffffff;
+}
+
+a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+h1, h2, h3 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ── Navbar ── */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0 2rem;
+  height: 56px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.navbar-nav {
+  display: flex;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+.navbar-nav a {
+  font-size: 0.9375rem;
+  color: #374151;
+}
+
+.navbar-nav a:hover {
+  color: #111827;
+}
+
+.navbar-lang {
+  display: flex;
+  gap: 0.375rem;
+}
+
+.lang-link {
+  font-size: 0.8125rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.lang-link:hover {
+  text-decoration: none;
+  background: #f3f4f6;
+}
+
+.lang-link[aria-current="page"] {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+/* ── Page layout ── */
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2.5rem 2rem;
+}
+
+.page-title {
+  font-size: 1.75rem;
+  margin-bottom: 2.5rem;
+}
+
+/* ── Sections ── */
+
+.section {
+  margin-bottom: 3rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.section-title {
+  font-size: 1.125rem;
+}
+
+.view-all {
+  font-size: 0.875rem;
+}
+
+/* ── Content list ── */
+
+.content-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.content-list li a {
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #111827;
+  font-size: 0.9375rem;
+}
+
+.content-list li a:hover {
+  background: #f9fafb;
+  text-decoration: none;
+}
+
+/* ── Pagination ── */
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.pagination-link {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.pagination-link:hover {
+  background: #f3f4f6;
+  text-decoration: none;
+}
+
+.pagination-link--disabled {
+  color: #d1d5db;
+  cursor: default;
+}
+
+.pagination-info {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* ── Category ── */
+
+.category-description {
+  margin: 0 0 2rem;
+  color: #6b7280;
+  font-size: 0.9375rem;
+}
+
+/* ── Collection item fields ── */
+
+.item-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.item-field-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  margin-bottom: 0.375rem;
+}
+
+.item-field-value {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #111827;
+}
+
+/* ── Micro copy table ── */
+
+.microcopy-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.microcopy-item {
+  display: grid;
+  grid-template-columns: 14rem 1fr;
+  gap: 1rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.875rem;
+}
+
+.microcopy-key {
+  font-weight: 500;
+  color: #6b7280;
+  word-break: break-all;
+}
+
+.microcopy-value {
+  color: #111827;
+}
