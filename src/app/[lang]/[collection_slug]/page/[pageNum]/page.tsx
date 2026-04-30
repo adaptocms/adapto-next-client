@@ -3,16 +3,14 @@ import { adapto } from "@/lib/adapto-sdk";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
 
-type Props = { params: Promise<{ lang: string; collection_slug: string; pageNum: string }> };
 
 export async function generateStaticParams({
   params: { lang, collection_slug },
 }: {
   params: { lang: string; collection_slug: string };
 }) {
-  const collection = await adapto.collections
-    .getBySlug(collection_slug)
-    .catch(() => null);
+  const collections = await adapto.collections.listAll({ language: lang });
+  const collection = collections.find((c) => c.slug === collection_slug);
   if (!collection) return [];
 
   const { pages: totalPages } = await adapto.collections.listItems(
@@ -25,14 +23,15 @@ export async function generateStaticParams({
   }));
 }
 
-export default async function CollectionPage({ params }: Props) {
+export default async function CollectionPage({
+  params,
+}: {
+  params: Promise<{ lang: string; collection_slug: string; pageNum: string }>;
+}) {
   const { lang, collection_slug, pageNum } = await params;
   const currentPage = Math.max(2, parseInt(pageNum, 10));
 
-  const collection = await adapto.collections
-    .getBySlug(collection_slug)
-    .catch(() => null);
-
+  const collection = await adapto.collections.getBySlug(collection_slug).catch(() => null);
   if (!collection) notFound();
 
   const { items, pages: totalPages } = await adapto.collections.listItems(
@@ -52,7 +51,11 @@ export default async function CollectionPage({ params }: Props) {
           </li>
         ))}
       </ul>
-      <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${lang}/${collection_slug}`} />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        basePath={`/${lang}/${collection_slug}`}
+      />
     </main>
   );
 }

@@ -3,14 +3,14 @@ import { adapto } from "@/lib/adapto-sdk";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
 
-type Props = { params: Promise<{ lang: string; slug: string; pageNum: string }> };
 
 export async function generateStaticParams({
   params: { lang, slug },
 }: {
   params: { lang: string; slug: string };
 }) {
-  const category = await adapto.categories.getBySlug(slug).catch(() => null);
+  const categories = await adapto.categories.listAll({ language: lang });
+  const category = categories.find((c) => c.slug === slug);
   if (!category) return [];
 
   const { pages: totalPages } = await adapto.articles.list({
@@ -26,7 +26,11 @@ export async function generateStaticParams({
   }));
 }
 
-export default async function CategoryPage({ params }: Props) {
+export default async function CategoryPage({
+  params,
+}: {
+  params: Promise<{ lang: string; slug: string; pageNum: string }>;
+}) {
   const { lang, slug, pageNum } = await params;
   const currentPage = Math.max(2, parseInt(pageNum, 10));
 
@@ -56,7 +60,11 @@ export default async function CategoryPage({ params }: Props) {
           </li>
         ))}
       </ul>
-      <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${lang}/articles/categories/${slug}`} />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        basePath={`/${lang}/articles/categories/${slug}`}
+      />
     </main>
   );
 }

@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto-sdk";
 import { hydrateMediaPlacements } from "@/lib/hydrateMediaPlacements";
 
-type Props = {
-  params: Promise<{ lang: string; collection_slug: string; item_slug: string }>;
-};
 
 export async function generateStaticParams({
   params: { lang },
@@ -15,46 +11,34 @@ export async function generateStaticParams({
   const collections = await adapto.collections.listAll({ language: lang });
 
   const results = await Promise.all(
-    collections.map(async (collection) => {
+    collections.filter((c) => c.slug).map(async (collection) => {
       const items = await adapto.collections.listAllItems(collection.id, {
         language: lang,
         status: "published",
       });
-      return items.map((item) => ({
-        collection_slug: collection.slug,
-        item_slug: item.slug,
-      }));
+      return items
+        .filter((item) => item.slug)
+        .map((item) => ({
+          collection_slug: collection.slug,
+          item_slug: item.slug,
+        }));
     }),
   );
 
   return results.flat();
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export default async function CollectionItemPage({
+  params,
+}: {
+  params: Promise<{ lang: string; collection_slug: string; item_slug: string }>;
+}) {
   const { collection_slug, item_slug } = await params;
-  const collection = await adapto.collections
-    .getBySlug(collection_slug)
-    .catch(() => null);
-  if (!collection) return {};
-  const item = await adapto.collections
-    .getItemBySlug(collection.id, item_slug)
-    .catch(() => null);
-  return { title: item?.title };
-}
 
-export default async function CollectionItemPage({ params }: Props) {
-  const { lang, collection_slug, item_slug } = await params;
-
-  const collection = await adapto.collections
-    .getBySlug(collection_slug)
-    .catch(() => null);
-
+  const collection = await adapto.collections.getBySlug(collection_slug).catch(() => null);
   if (!collection) notFound();
 
-  const item = await adapto.collections
-    .getItemBySlug(collection.id, item_slug)
-    .catch(() => null);
-
+  const item = await adapto.collections.getItemBySlug(collection.id, item_slug).catch(() => null);
   if (!item) notFound();
 
   return (
