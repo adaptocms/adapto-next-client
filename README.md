@@ -47,7 +47,7 @@ cp .env.example .env
 Open `.env` and add your credentials:
 
 ```env
-ADAPTO_API_URL=https://public-api.adaptocms.com/v1
+ADAPTO_API_URL=https://public-api.adaptocms.com
 ADAPTO_API_KEY=your_api_key_here
 ```
 
