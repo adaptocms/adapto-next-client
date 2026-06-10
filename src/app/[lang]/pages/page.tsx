@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { adapto } from "@/lib/adapto-sdk";
+import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
 

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { adapto } from "@/lib/adapto-sdk";
+import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
 
@@ -9,7 +9,7 @@ export async function generateStaticParams({
 }: {
   params: { lang: string };
 }) {
-  const collections = await adapto.collections.listAll({ language: lang });
+  const collections = await adapto.customCollections.listAll({ language: lang });
   return collections.filter((c) => c.slug).map((c) => ({ collection_slug: c.slug }));
 }
 
@@ -19,10 +19,10 @@ export default async function CollectionPage({
   params: Promise<{ lang: string; collection_slug: string }>;
 }) {
   const { lang, collection_slug } = await params;
-  const collection = await adapto.collections.getBySlug(collection_slug).catch(() => null);
+  const collection = await adapto.customCollections.getBySlug(collection_slug).catch(() => null);
   if (!collection) notFound();
 
-  const { items, pages: totalPages } = await adapto.collections.listItems(
+  const { items, pages: totalPages } = await adapto.customCollections.listItems(
     collection.id,
     { language: lang, status: "published", page: 1, limit: PAGE_SIZE },
   );

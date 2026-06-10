@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { adapto } from "@/lib/adapto-sdk";
-import { hydrateMediaPlacements } from "@/lib/hydrateMediaPlacements";
+import { adapto } from "@/lib/adapto";
+import { hydrateMediaPlacements } from "adapto-client-sdk";
 
 
 export async function generateStaticParams({

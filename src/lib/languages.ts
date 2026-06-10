@@ -1,8 +1,7 @@
-import { adapto } from "./adapto-sdk";
-import { TENANT_ID } from "../config";
+import { adapto } from "./adapto";
 
 export async function getLanguages(): Promise<string[]> {
-  return adapto.languages.list(TENANT_ID);
+  return adapto.languages.list();
 }
 
 export async function getDefaultLanguage(): Promise<string | null> {

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { adapto } from "@/lib/adapto-sdk";
+import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
 
@@ -10,7 +10,7 @@ export async function generateStaticParams({
 }: {
   params: { lang: string };
 }) {
-  const { pages: totalPages } = await adapto.collections.list({
+  const { pages: totalPages } = await adapto.customCollections.list({
     language: lang,
     page: 1,
     limit: PAGE_SIZE,
@@ -25,7 +25,7 @@ export default async function CollectionsPage({ params }: Props) {
   const { lang, pageNum } = await params;
   const currentPage = Math.max(2, parseInt(pageNum, 10));
 
-  const { items, pages: totalPages } = await adapto.collections.list({
+  const { items, pages: totalPages } = await adapto.customCollections.list({
     language: lang,
     page: currentPage,
     limit: PAGE_SIZE,

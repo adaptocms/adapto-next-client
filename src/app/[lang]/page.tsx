@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { adapto } from "@/lib/adapto-sdk";
+import { adapto } from "@/lib/adapto";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -12,7 +12,7 @@ export default async function HomePage({ params }: Props) {
     await Promise.all([
       adapto.pages.list({ language: lang, status: "published", limit: 10 }),
       adapto.articles.list({ language: lang, status: "published", limit: 10 }),
-      adapto.collections.list({ language: lang, limit: 10 }),
+      adapto.customCollections.list({ language: lang, limit: 10 }),
       adapto.microCopy.list({ language: lang }),
     ]);
 

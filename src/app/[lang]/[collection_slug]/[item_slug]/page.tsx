@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { adapto } from "@/lib/adapto-sdk";
-import { hydrateMediaPlacements } from "@/lib/hydrateMediaPlacements";
+import { adapto } from "@/lib/adapto";
+import { hydrateMediaPlacements } from "adapto-client-sdk";
 
 
 export async function generateStaticParams({
@@ -8,11 +8,11 @@ export async function generateStaticParams({
 }: {
   params: { lang: string };
 }) {
-  const collections = await adapto.collections.listAll({ language: lang });
+  const collections = await adapto.customCollections.listAll({ language: lang });
 
   const results = await Promise.all(
     collections.filter((c) => c.slug).map(async (collection) => {
-      const items = await adapto.collections.listAllItems(collection.id, {
+      const items = await adapto.customCollections.listAllItems(collection.id, {
         language: lang,
         status: "published",
       });
@@ -35,10 +35,10 @@ export default async function CollectionItemPage({
 }) {
   const { collection_slug, item_slug } = await params;
 
-  const collection = await adapto.collections.getBySlug(collection_slug).catch(() => null);
+  const collection = await adapto.customCollections.getBySlug(collection_slug).catch(() => null);
   if (!collection) notFound();
 
-  const item = await adapto.collections.getItemBySlug(collection.id, item_slug).catch(() => null);
+  const item = await adapto.customCollections.getItemBySlug(collection.id, item_slug).catch(() => null);
   if (!item) notFound();
 
   return (
