@@ -1,7 +1,8 @@
 import { adapto } from "./adapto";
+import { guardedAll } from "./loaders";
 
 export async function getLanguages(): Promise<string[]> {
-  return adapto.languages.list();
+  return guardedAll(() => adapto.languages.list());
 }
 
 export async function getDefaultLanguage(): Promise<string | null> {

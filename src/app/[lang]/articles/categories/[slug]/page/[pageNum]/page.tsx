@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
+import { guardedList, guardedAll } from "@/lib/loaders";
 
 
 export async function generateStaticParams({
@@ -9,17 +10,19 @@ export async function generateStaticParams({
 }: {
   params: { lang: string; slug: string };
 }) {
-  const categories = await adapto.categories.listAll({ language: lang });
+  const categories = await guardedAll(() => adapto.categories.listAll({ language: lang }));
   const category = categories.find((c) => c.slug === slug);
   if (!category) return [];
 
-  const { pages: totalPages } = await adapto.articles.list({
-    language: lang,
-    status: "published",
-    category: category.id,
-    page: 1,
-    limit: PAGE_SIZE,
-  });
+  const { pages: totalPages } = await guardedList(() =>
+    adapto.articles.list({
+      language: lang,
+      status: "published",
+      category: category.id,
+      page: 1,
+      limit: PAGE_SIZE,
+    }),
+  );
 
   return Array.from({ length: Math.max(0, totalPages - 1) }, (_, i) => ({
     pageNum: String(i + 2),
@@ -37,13 +40,15 @@ export default async function CategoryPage({
   const category = await adapto.categories.getBySlug(slug).catch(() => null);
   if (!category) notFound();
 
-  const { items: articles, pages: totalPages } = await adapto.articles.list({
-    language: lang,
-    status: "published",
-    category: category.id,
-    page: currentPage,
-    limit: PAGE_SIZE,
-  });
+  const { items: articles, pages: totalPages } = await guardedList(() =>
+    adapto.articles.list({
+      language: lang,
+      status: "published",
+      category: category.id,
+      page: currentPage,
+      limit: PAGE_SIZE,
+    }),
+  );
 
   if (currentPage > totalPages) notFound();
 

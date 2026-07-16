@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { adapto } from "@/lib/adapto";
+import { guardedList, guardedAll } from "@/lib/loaders";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -10,10 +11,10 @@ export default async function HomePage({ params }: Props) {
 
   const [pagesRes, articlesRes, collectionsRes, microCopies] =
     await Promise.all([
-      adapto.pages.list({ language: lang, status: "published", limit: 10 }),
-      adapto.articles.list({ language: lang, status: "published", limit: 10 }),
-      adapto.customCollections.list({ language: lang, limit: 10 }),
-      adapto.microCopy.list({ language: lang }),
+      guardedList(() => adapto.pages.list({ language: lang, status: "published", limit: 10 })),
+      guardedList(() => adapto.articles.list({ language: lang, status: "published", limit: 10 })),
+      guardedList(() => adapto.customCollections.list({ language: lang, limit: 10 })),
+      guardedAll(() => adapto.microCopy.list({ language: lang })),
     ]);
 
   const topMicroCopies = microCopies.slice(0, 10);

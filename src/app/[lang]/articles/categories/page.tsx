@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
+import { guardedList } from "@/lib/loaders";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -10,11 +11,13 @@ export const metadata: Metadata = { title: "Categories" };
 export default async function CategoriesPage({ params }: Props) {
   const { lang } = await params;
 
-  const { items: categories, pages: totalPages } = await adapto.categories.list({
-    language: lang,
-    page: 1,
-    limit: PAGE_SIZE,
-  });
+  const { items: categories, pages: totalPages } = await guardedList(() =>
+    adapto.categories.list({
+      language: lang,
+      page: 1,
+      limit: PAGE_SIZE,
+    }),
+  );
 
   return (
     <main className="container">

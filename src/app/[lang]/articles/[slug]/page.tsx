@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto";
+import { guardedAll } from "@/lib/loaders";
 import { hydrateMediaPlacements } from "adapto-client-sdk";
 
 
@@ -8,7 +9,9 @@ export async function generateStaticParams({
 }: {
   params: { lang: string };
 }) {
-  const articles = await adapto.articles.listAll({ language: lang, status: "published" });
+  const articles = await guardedAll(() =>
+    adapto.articles.listAll({ language: lang, status: "published" }),
+  );
   return articles.filter((a) => a.slug).map((a) => ({ slug: a.slug }));
 }
 
