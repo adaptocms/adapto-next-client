@@ -1,25 +1,42 @@
 import type { Metadata } from "next";
 import { adapto } from "@/lib/adapto";
+import { guardedList, guardedAll, IS_CONFIGURED } from "@/lib/loaders";
 
 type Props = { params: Promise<{ lang: string }> };
 
 export const metadata: Metadata = { title: "Overview" };
+
+// Dev-only first-run guidance — never rendered in a production build.
+const IS_DEV = process.env.NODE_ENV === "development";
 
 export default async function HomePage({ params }: Props) {
   const { lang } = await params;
 
   const [pagesRes, articlesRes, collectionsRes, microCopies] =
     await Promise.all([
-      adapto.pages.list({ language: lang, status: "published", limit: 10 }),
-      adapto.articles.list({ language: lang, status: "published", limit: 10 }),
-      adapto.customCollections.list({ language: lang, limit: 10 }),
-      adapto.microCopy.list({ language: lang }),
+      guardedList(() => adapto.pages.list({ language: lang, status: "published", limit: 10 })),
+      guardedList(() => adapto.articles.list({ language: lang, status: "published", limit: 10 })),
+      guardedList(() => adapto.customCollections.list({ language: lang, limit: 10 })),
+      guardedAll(() => adapto.microCopy.list({ language: lang })),
     ]);
 
   const topMicroCopies = microCopies.slice(0, 10);
 
   return (
     <main className="container">
+      {IS_DEV &&
+        (IS_CONFIGURED ? (
+          <p className="dev-note">
+            Static site: content changes show up after you restart the dev server or
+            rebuild.
+          </p>
+        ) : (
+          <p className="dev-note">
+            <strong>Not connected to Adapto CMS.</strong> Add ADAPTO_API_URL and
+            ADAPTO_API_KEY to your <code>.env</code>, then restart the dev server.
+          </p>
+        ))}
+
       <h1 className="page-title">Content Overview</h1>
 
       <section className="section">

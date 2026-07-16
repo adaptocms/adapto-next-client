@@ -75,6 +75,27 @@ npm run start    # serve the production build
 
 ---
 
+## ✅ Verification gate
+
+Run these before merging any change to the scaffold. A fresh scaffold must survive with no
+API key, because `create-adapto-app` generates a project that gets built before anyone
+configures it.
+
+1. **Keyless build** — with no `.env`, `npm run build` succeeds and pre-renders the
+   default-language routes. Unconfigured content loads as empty and onboarding renders,
+   nothing crashes.
+2. **Keyless dev** — `npm run dev` serves `/` with a 200 and no crash.
+3. **Broken build fails loud** — with a set-but-invalid key, `npm run build` exits non-zero.
+   A configured build that can't reach the CMS must fail, not ship an empty site silently.
+4. **Valid key** — with a real `.env`, `npm run build` authenticates, fetches content, and
+   pre-renders every language.
+
+The guard lives in `src/lib/loaders.ts` (`IS_CONFIGURED` plus `guardedList` / `guardedAll`):
+every SDK call routes through it, so an unconfigured project degrades to empty data instead of
+throwing, while a real fetch error in a production build still throws.
+
+---
+
 ## 🗂️ Content Types
 
 ### Articles

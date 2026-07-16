@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto";
+import { guardedAll } from "@/lib/loaders";
 import { hydrateMediaPlacements } from "adapto-client-sdk";
 
 
@@ -8,14 +9,16 @@ export async function generateStaticParams({
 }: {
   params: { lang: string };
 }) {
-  const collections = await adapto.customCollections.listAll({ language: lang });
+  const collections = await guardedAll(() => adapto.customCollections.listAll({ language: lang }));
 
   const results = await Promise.all(
     collections.filter((c) => c.slug).map(async (collection) => {
-      const items = await adapto.customCollections.listAllItems(collection.id, {
-        language: lang,
-        status: "published",
-      });
+      const items = await guardedAll(() =>
+        adapto.customCollections.listAllItems(collection.id, {
+          language: lang,
+          status: "published",
+        }),
+      );
       return items
         .filter((item) => item.slug)
         .map((item) => ({
