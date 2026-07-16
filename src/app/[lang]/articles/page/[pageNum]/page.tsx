@@ -29,28 +29,62 @@ export default async function ArticlesPage({ params }: Props) {
   const { lang, pageNum } = await params;
   const currentPage = Math.max(2, parseInt(pageNum, 10));
 
-  const { items, pages: totalPages } = await guardedList(() =>
-    adapto.articles.list({
-      language: lang,
-      status: "published",
-      page: currentPage,
-      limit: PAGE_SIZE,
-    }),
-  );
+  const [{ items, pages: totalPages }, { items: categories }] = await Promise.all([
+    guardedList(() =>
+      adapto.articles.list({
+        language: lang,
+        status: "published",
+        field: "published_at",
+        order: "desc",
+        page: currentPage,
+        limit: PAGE_SIZE,
+      }),
+    ),
+    guardedList(() => adapto.categories.list({ language: lang, limit: 100 })),
+  ]);
 
   if (currentPage > totalPages) notFound();
 
   return (
     <main className="container">
       <h1 className="page-title">Articles</h1>
-      <ul className="content-list">
-        {items.map((article) => (
-          <li key={article.id}>
-            <a href={`/${lang}/articles/${article.slug}`}>{article.title}</a>
-          </li>
-        ))}
-      </ul>
-      <Pagination currentPage={currentPage} totalPages={totalPages} basePath={`/${lang}/articles`} />
+      <div className="articles-layout">
+        <div>
+          {items.length === 0 ? (
+            <p className="muted-note">No articles yet.</p>
+          ) : (
+            <ul className="content-list">
+              {items.map((article) => (
+                <li key={article.id}>
+                  <a href={`/${lang}/articles/${article.slug}`}>{article.title}</a>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            basePath={`/${lang}/articles`}
+          />
+        </div>
+
+        <aside className="articles-sidebar">
+          <h2 className="sidebar-title">Categories</h2>
+          {categories.length === 0 ? (
+            <p className="muted-note">No categories yet.</p>
+          ) : (
+            <ul className="content-list">
+              {categories.map((category) => (
+                <li key={category.id}>
+                  <a href={`/${lang}/articles/categories/${category.slug}`}>
+                    {category.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </aside>
+      </div>
     </main>
   );
 }

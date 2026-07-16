@@ -246,6 +246,33 @@ ul {
   color: #111827;
 }
 
+/* ── Articles index (list + category sidebar) ── */
+
+.articles-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .articles-layout {
+    grid-template-columns: 1fr 15rem;
+  }
+}
+
+.sidebar-title {
+  font-size: 1.125rem;
+  margin-bottom: 0.875rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.muted-note {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9375rem;
+}
+
 /* ── Footer ── */
 
 .footer {
