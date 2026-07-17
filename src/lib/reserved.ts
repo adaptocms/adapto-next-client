@@ -3,6 +3,12 @@
 // folder before the `[collection_slug]` catch-all), so it never renders — a silent break.
 export const RESERVED_SLUGS = ["articles", "collections", "micro-copies", "pages"];
 
+// Reserved collection slugs use a leading underscore (e.g. `_adapto_seo`): agent-skills create
+// these for internal use, so they must never surface in nav, routes, or the sitemap.
+export function isReserved(slug: string): boolean {
+  return slug.startsWith("_");
+}
+
 // Pure: which of the given collection slugs collide with a reserved route. Deduped.
 export function findReservedCollisions(slugs: string[]): string[] {
   return [...new Set(slugs)].filter((slug) => RESERVED_SLUGS.includes(slug));

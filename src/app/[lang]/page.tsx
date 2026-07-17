@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { adapto } from "@/lib/adapto";
 import { guardedList, guardedAll, IS_CONFIGURED } from "@/lib/loaders";
+import { isReserved } from "@/lib/reserved";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -21,6 +22,9 @@ export default async function HomePage({ params }: Props) {
     ]);
 
   const topMicroCopies = microCopies.slice(0, 10);
+  // ponytail: reserved `_*` collections are internal; total may still count them (exact
+  // filtering would need a full listAll), but they never appear in the list or link out.
+  const collections = collectionsRes.items.filter((c) => !isReserved(c.slug));
 
   return (
     <main className="container">
@@ -79,7 +83,7 @@ export default async function HomePage({ params }: Props) {
           </a>
         </div>
         <ul className="content-list">
-          {collectionsRes.items.map((collection) => (
+          {collections.map((collection) => (
             <li key={collection.id}>
               <a href={`/${lang}/${collection.slug}`}>{collection.name}</a>
             </li>

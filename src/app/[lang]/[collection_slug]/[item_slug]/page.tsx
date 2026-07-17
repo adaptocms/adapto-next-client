@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto";
 import { guardedAll } from "@/lib/loaders";
+import { isReserved } from "@/lib/reserved";
 import { hydrateMediaPlacements } from "adapto-client-sdk";
 
 
@@ -12,7 +13,7 @@ export async function generateStaticParams({
   const collections = await guardedAll(() => adapto.customCollections.listAll({ language: lang }));
 
   const results = await Promise.all(
-    collections.filter((c) => c.slug).map(async (collection) => {
+    collections.filter((c) => c.slug && !isReserved(c.slug)).map(async (collection) => {
       const items = await guardedAll(() =>
         adapto.customCollections.listAllItems(collection.id, {
           language: lang,
@@ -37,6 +38,7 @@ export default async function CollectionItemPage({
   params: Promise<{ lang: string; collection_slug: string; item_slug: string }>;
 }) {
   const { collection_slug, item_slug } = await params;
+  if (isReserved(collection_slug)) notFound();
 
   const collection = await adapto.customCollections.getBySlug(collection_slug).catch(() => null);
   if (!collection) notFound();
