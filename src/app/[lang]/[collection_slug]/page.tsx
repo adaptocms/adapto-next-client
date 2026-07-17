@@ -3,7 +3,7 @@ import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
 import { guardedList, guardedAll } from "@/lib/loaders";
-import { warnReservedCollisions } from "@/lib/reserved";
+import { warnReservedCollisions, isReserved } from "@/lib/reserved";
 
 
 export async function generateStaticParams({
@@ -13,7 +13,9 @@ export async function generateStaticParams({
 }) {
   const collections = await guardedAll(() => adapto.customCollections.listAll({ language: lang }));
   warnReservedCollisions(collections.map((c) => c.slug));
-  return collections.filter((c) => c.slug).map((c) => ({ collection_slug: c.slug }));
+  return collections
+    .filter((c) => c.slug && !isReserved(c.slug))
+    .map((c) => ({ collection_slug: c.slug }));
 }
 
 export default async function CollectionPage({
@@ -22,6 +24,8 @@ export default async function CollectionPage({
   params: Promise<{ lang: string; collection_slug: string }>;
 }) {
   const { lang, collection_slug } = await params;
+  // Reserved slugs never get a static route; guard the on-demand path too (dynamicParams is on).
+  if (isReserved(collection_slug)) notFound();
   const collection = await adapto.customCollections.getBySlug(collection_slug).catch(() => null);
   if (!collection) notFound();
 
