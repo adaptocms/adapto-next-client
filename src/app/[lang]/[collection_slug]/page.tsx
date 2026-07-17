@@ -3,6 +3,7 @@ import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
 import { guardedList, guardedAll } from "@/lib/loaders";
+import { warnReservedCollisions } from "@/lib/reserved";
 
 
 export async function generateStaticParams({
@@ -11,6 +12,7 @@ export async function generateStaticParams({
   params: { lang: string };
 }) {
   const collections = await guardedAll(() => adapto.customCollections.listAll({ language: lang }));
+  warnReservedCollisions(collections.map((c) => c.slug));
   return collections.filter((c) => c.slug).map((c) => ({ collection_slug: c.slug }));
 }
 
