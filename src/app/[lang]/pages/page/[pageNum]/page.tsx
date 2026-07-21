@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
-import { guardedList } from "@/lib/loaders";
+import DraftBadge from "@/components/DraftBadge";
+import { guardedList, listWithDrafts } from "@/lib/loaders";
 
 type Props = { params: Promise<{ lang: string; pageNum: string }> };
 
@@ -29,13 +30,17 @@ export default async function PagesPage({ params }: Props) {
   const { lang, pageNum } = await params;
   const currentPage = Math.max(2, parseInt(pageNum, 10));
 
-  const { items, pages: totalPages } = await guardedList(() =>
-    adapto.pages.list({
-      language: lang,
-      status: "published",
-      page: currentPage,
-      limit: PAGE_SIZE,
-    }),
+  const { items, pages: totalPages } = await listWithDrafts(
+    () =>
+      adapto.pages.list({
+        language: lang,
+        status: "published",
+        page: currentPage,
+        limit: PAGE_SIZE,
+      }),
+    (status) => adapto.pages.listAll({ language: lang, status }),
+    currentPage,
+    PAGE_SIZE,
   );
 
   if (currentPage > totalPages) notFound();
@@ -47,6 +52,7 @@ export default async function PagesPage({ params }: Props) {
         {items.map((page) => (
           <li key={page.id}>
             <a href={`/${lang}/pages/${page.slug}`}>{page.title}</a>
+            <DraftBadge status={page.status} />
           </li>
         ))}
       </ul>

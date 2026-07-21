@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto";
-import { guardedAll } from "@/lib/loaders";
+import DraftBadge from "@/components/DraftBadge";
+import { guardedAll, IS_PROD } from "@/lib/loaders";
 import { isReserved } from "@/lib/reserved";
 import { hydrateMediaPlacements } from "adapto-client-sdk";
 
@@ -45,10 +46,12 @@ export default async function CollectionItemPage({
 
   const item = await adapto.customCollections.getItemBySlug(collection.id, item_slug).catch(() => null);
   if (!item) notFound();
+  // Drafts are previewable in `next dev`, but never served from a production build.
+  if (IS_PROD && item.status !== "published") notFound();
 
   return (
     <main className="container">
-      <h1 className="page-title">{item.title}</h1>
+      <h1 className="page-title">{item.title} <DraftBadge status={item.status} /></h1>
       <div className="item-fields">
         {collection.fields.map((field) => {
           const value = item.data[field.name];

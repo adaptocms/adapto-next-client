@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
-import { guardedList, guardedAll } from "@/lib/loaders";
+import DraftBadge from "@/components/DraftBadge";
+import { guardedList, guardedAll, listWithDrafts } from "@/lib/loaders";
 import { isReserved } from "@/lib/reserved";
 
 
@@ -42,13 +43,18 @@ export default async function CollectionPage({
   const collection = await adapto.customCollections.getBySlug(collection_slug).catch(() => null);
   if (!collection) notFound();
 
-  const { items, pages: totalPages } = await guardedList(() =>
-    adapto.customCollections.listItems(collection.id, {
-      language: lang,
-      status: "published",
-      page: currentPage,
-      limit: PAGE_SIZE,
-    }),
+  const { items, pages: totalPages } = await listWithDrafts(
+    () =>
+      adapto.customCollections.listItems(collection.id, {
+        language: lang,
+        status: "published",
+        page: currentPage,
+        limit: PAGE_SIZE,
+      }),
+    (status) =>
+      adapto.customCollections.listAllItems(collection.id, { language: lang, status }),
+    currentPage,
+    PAGE_SIZE,
   );
 
   if (currentPage > totalPages) notFound();
@@ -60,6 +66,7 @@ export default async function CollectionPage({
         {items.map((item) => (
           <li key={item.id}>
             <a href={`/${lang}/${collection_slug}/${item.slug}`}>{item.title}</a>
+            <DraftBadge status={item.status} />
           </li>
         ))}
       </ul>

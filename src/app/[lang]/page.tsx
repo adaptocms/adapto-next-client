@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { adapto } from "@/lib/adapto";
-import { guardedList, guardedAll, IS_CONFIGURED } from "@/lib/loaders";
+import DraftBadge from "@/components/DraftBadge";
+import { guardedList, guardedAll, IS_CONFIGURED, listWithDrafts } from "@/lib/loaders";
 import { isReserved } from "@/lib/reserved";
 
 type Props = { params: Promise<{ lang: string }> };
@@ -15,8 +16,18 @@ export default async function HomePage({ params }: Props) {
 
   const [pagesRes, articlesRes, collectionsRes, microCopies] =
     await Promise.all([
-      guardedList(() => adapto.pages.list({ language: lang, status: "published", limit: 10 })),
-      guardedList(() => adapto.articles.list({ language: lang, status: "published", limit: 10 })),
+      listWithDrafts(
+        () => adapto.pages.list({ language: lang, status: "published", limit: 10 }),
+        (status) => adapto.pages.listAll({ language: lang, status }),
+        1,
+        10,
+      ),
+      listWithDrafts(
+        () => adapto.articles.list({ language: lang, status: "published", limit: 10 }),
+        (status) => adapto.articles.listAll({ language: lang, status }),
+        1,
+        10,
+      ),
       guardedList(() => adapto.customCollections.list({ language: lang, limit: 10 })),
       guardedAll(() => adapto.microCopy.list({ language: lang })),
     ]);
@@ -54,6 +65,7 @@ export default async function HomePage({ params }: Props) {
           {pagesRes.items.map((page) => (
             <li key={page.id}>
               <a href={`/${lang}/pages/${page.slug}`}>{page.title}</a>
+              <DraftBadge status={page.status} />
             </li>
           ))}
         </ul>
@@ -70,6 +82,7 @@ export default async function HomePage({ params }: Props) {
           {articlesRes.items.map((article) => (
             <li key={article.id}>
               <a href={`/${lang}/articles/${article.slug}`}>{article.title}</a>
+              <DraftBadge status={article.status} />
             </li>
           ))}
         </ul>

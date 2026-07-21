@@ -11,7 +11,15 @@ function isConfigured(url: string, key: string): boolean {
 export const IS_CONFIGURED = isConfigured(API_URL, API_KEY);
 
 // `next build` runs with NODE_ENV=production; `next dev` with development.
-const IS_PROD = process.env.NODE_ENV === "production";
+export const IS_PROD = process.env.NODE_ENV === "production";
+
+type ContentStatus = "published" | "draft";
+
+// The statuses the site shows: published in production, published + drafts while
+// running `next dev`. Drafts never ship to a production build.
+export const VISIBLE_STATUSES: ContentStatus[] = IS_PROD
+  ? ["published"]
+  : ["published", "draft"];
 
 async function guard<T>(load: () => Promise<T>, fallback: T): Promise<T> {
   if (!IS_CONFIGURED) return fallback;
@@ -41,4 +49,35 @@ export function guardedList<T>(
 // Wrap an array endpoint (`.listAll`, `microCopy.list`, `languages.list`). → empty array.
 export function guardedAll<T>(load: () => Promise<T[]>): Promise<T[]> {
   return guard(load, [] as T[]);
+}
+
+// A paginated list that includes drafts while running `next dev`, and never in a
+// production build. In prod it's the single `status:"published"` request the caller
+// supplies (server-paginated). In dev it fetches the full published + draft sets via
+// `all(status)`, merges, sorts, and slices the requested page — so drafts show locally
+// with correct pagination. Each item keeps its `status`, so the UI can badge drafts.
+export async function listWithDrafts<T>(
+  page: () => Promise<PaginatedResponse<T>>,
+  all: (status: ContentStatus) => Promise<T[]>,
+  pageNum: number,
+  limit: number,
+  sort?: (a: T, b: T) => number,
+): Promise<PaginatedResponse<T>> {
+  if (IS_PROD) return guardedList(page);
+
+  const sets = await Promise.all(
+    VISIBLE_STATUSES.map((status) => guardedAll(() => all(status))),
+  );
+  const merged = sets.flat();
+  if (sort) merged.sort(sort);
+
+  const total = merged.length;
+  const from = (pageNum - 1) * limit;
+  return {
+    items: merged.slice(from, from + limit),
+    total,
+    page: pageNum,
+    limit,
+    pages: Math.max(1, Math.ceil(total / limit)),
+  };
 }

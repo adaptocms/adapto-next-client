@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto";
-import { guardedAll } from "@/lib/loaders";
+import DraftBadge from "@/components/DraftBadge";
+import { guardedAll, IS_PROD } from "@/lib/loaders";
 import { hydrateMediaPlacements } from "adapto-client-sdk";
 
 
@@ -23,6 +24,8 @@ export default async function ArticlePage({
   const { slug } = await params;
   const article = await adapto.articles.getBySlug(slug).catch(() => null);
   if (!article) notFound();
+  // Drafts are previewable in `next dev`, but never served from a production build.
+  if (IS_PROD && article.status !== "published") notFound();
 
   const content = hydrateMediaPlacements(
     article.content,
@@ -32,7 +35,7 @@ export default async function ArticlePage({
   return (
     <main>
       <article>
-        <h1>{article.title}</h1>
+        <h1>{article.title} <DraftBadge status={article.status} /></h1>
         <div dangerouslySetInnerHTML={{ __html: content }} />
       </article>
     </main>

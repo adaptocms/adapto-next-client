@@ -2,7 +2,8 @@ import { notFound } from "next/navigation";
 import { adapto } from "@/lib/adapto";
 import { PAGE_SIZE } from "@/config";
 import Pagination from "@/components/Pagination";
-import { guardedList } from "@/lib/loaders";
+import DraftBadge from "@/components/DraftBadge";
+import { guardedList, listWithDrafts } from "@/lib/loaders";
 
 type Props = { params: Promise<{ lang: string; pageNum: string }> };
 
@@ -30,15 +31,24 @@ export default async function ArticlesPage({ params }: Props) {
   const currentPage = Math.max(2, parseInt(pageNum, 10));
 
   const [{ items, pages: totalPages }, { items: categories }] = await Promise.all([
-    guardedList(() =>
-      adapto.articles.list({
-        language: lang,
-        status: "published",
-        field: "published_at",
-        order: "desc",
-        page: currentPage,
-        limit: PAGE_SIZE,
-      }),
+    listWithDrafts(
+      () =>
+        adapto.articles.list({
+          language: lang,
+          status: "published",
+          field: "published_at",
+          order: "desc",
+          page: currentPage,
+          limit: PAGE_SIZE,
+        }),
+      (status) =>
+        adapto.articles.listAll({ language: lang, status, field: "published_at", order: "desc" }),
+      currentPage,
+      PAGE_SIZE,
+      (a, b) =>
+        String(b.published_at ?? b.created_at ?? "").localeCompare(
+          String(a.published_at ?? a.created_at ?? ""),
+        ),
     ),
     guardedList(() => adapto.categories.list({ language: lang, limit: 100 })),
   ]);
@@ -57,6 +67,7 @@ export default async function ArticlesPage({ params }: Props) {
               {items.map((article) => (
                 <li key={article.id}>
                   <a href={`/${lang}/articles/${article.slug}`}>{article.title}</a>
+                  <DraftBadge status={article.status} />
                 </li>
               ))}
             </ul>
